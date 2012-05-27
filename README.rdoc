@@ -1,0 +1,34 @@
+= Union Station
+
+Union Station is a Ruby event broadcasting and listening daemon. It was inspired heavily by Ben LeMasurier's own {blode.js}[https://github.com/benlemasurier/blode], a very similar (and awesome) project used in SparkFun Electronics' {blodeJazz}[http://www.sparkfun.com/news/839].
+
+The name Union Station is a tribute to Denver's Union Station, a train station built in 1914.
+
+== History
+
+Work on Union Station started as a part of {scroll}[http://rubygems.org/gems/scroll], a framework for securely running extremely scriptable applications on Linux servers. With a list of new features to add to scroll 0.7 (including an event notification center), I remembered SparkFun's project and decided to roll my own event daemon.
+
+== Overview
+
+    +-------------+ +-------------+ +-------------+
+    |    Java     | |     PHP     | |    Rails    | #<= Event sources: servers,
+    | application | | application | | application | #<= daemons, syslog, etc
+    +-------------+ +-------------+ +-------------+
+           \               |               /     
+             \             |             /
+               \           |           /
+                 \         |         /
+                   \       |       /
+                     \     |     /
+                  +-----------------+
+                  |  Union Station  |               #<= Event dispatcher
+                  +-----------------+
+                           |
+                           |
+                           |
+                  +-----------------+
+                  | Event listeners |               #<= Event listeners
+                  |   (anything!)   |               #<= Whatever you want!
+                  +-----------------+
+                  
+Union Station provides a JSON interface to broadcast and receive events, and a Ruby library to directly interface with the Union Station daemon.
