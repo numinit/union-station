@@ -2,7 +2,7 @@
 
 Union Station is a Ruby event broadcasting and listening daemon. It was inspired heavily by Ben LeMasurier's own {blode.js}[https://github.com/benlemasurier/blode], a very similar (and awesome) project used in SparkFun Electronics' {blodeJazz}[http://www.sparkfun.com/news/839].
 
-The name Union Station is a tribute to Denver's Union Station, a train station built in 1914.
+The name Union Station is a tribute to Denver's Union Station, a train station built in 1894.
 
 == History
 

@@ -4,15 +4,16 @@ require 'union_station'
 
 require 'us/protocol/tcp'
 require 'us/protocol/udp'
+require 'us/protocol/unix'
 
 class UnionStationTest < Test::Unit::TestCase  
   def test_server_start_stop
     assert_nothing_raised do
       # Start the server
-      pid = UnionStation.start!(:tcp => :default)
+      pid = UnionStation.start!(:tcp => :default, :udp => :default, :unix => {:socket => "#{ENV['HOME']}/union_station.socket"})
       assert_not_same(pid, 0)
       
-      sleep(0.5)
+      sleep(100.5)
       
       # Stop the server
       ret = UnionStation.stop!

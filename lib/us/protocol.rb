@@ -1,12 +1,7 @@
-#      __  __       _               _____ __        __  _
-#     / / / /____  (_)____  ____   / ___// /_____ _/ /_(_)____  ____
-#    / / / // __ \/ // __ \/ __ \  \__ \/ __/ __ `/ __/ // __ \/ __ \
-#   / /_/ // / / / // /_/ / / / / ___/ / /_/ /_/ / /_/ // /_/ / / / /
-#   \____//_/ /_/_/ \____/_/ /_/ /____/\__/\__,_/\__/_/ \____/_/ /_/
-#             Established 1914 in Denver, CO - Travel by Rails today!
-
 module UnionStation
-  class Protocol < EM::P::LineAndTextProtocol
+  # The base class for Union Station protocols.
+  # Inherits from LineAndTextProtocol since it's all JSON.
+  module Protocol
     # The Server that this protocol belongs to
     attr_accessor :server
     
@@ -31,11 +26,7 @@ module UnionStation
     def post_init
       @server.bind(self)
       @sid = @channel.subscribe do |data|
-        begin
-          self.send_data(Message.from_json(data).to_json)
-        rescue JSON::ParserError
-          self.close_connection
-        end
+        self.send(data)
       end
     end
     
@@ -46,8 +37,13 @@ module UnionStation
     end
     
     # Sends some data. Can easily be overridden by subclasses.
-    def send_data(data)
-      super
+    def send(data)
+      begin
+        self.send_data(Message.from_json(data).to_json)
+      rescue RuntimeError, JSON::ParserError => err
+        warn err.to_s.gsub(/(\r|\n)/, '')
+        self.close_connection
+      end
     end
     
     # Receives some data. Can easily be overridden by subclasses.

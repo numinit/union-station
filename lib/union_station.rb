@@ -13,7 +13,6 @@ require 'us/protocol'
 
 # The main Union Station module.
 # Everything related to Union Station is contained within here!
-# This project was inspired by {BlodeJS}[https://github.com/benlemasurier/blode].
 module UnionStation
   # Starts Union Station as a daemon.
   #

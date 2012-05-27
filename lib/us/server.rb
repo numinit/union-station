@@ -1,17 +1,22 @@
-#      __  __       _               _____ __        __  _
-#     / / / /____  (_)____  ____   / ___// /_____ _/ /_(_)____  ____
-#    / / / // __ \/ // __ \/ __ \  \__ \/ __/ __ `/ __/ // __ \/ __ \
-#   / /_/ // / / / // /_/ / / / / ___/ / /_/ /_/ / /_/ // /_/ / / / /
-#   \____//_/ /_/_/ \____/_/ /_/ /____/\__/\__,_/\__/_/ \____/_/ /_/
-#             Established 1914 in Denver, CO - Travel by Rails today!
-
 module UnionStation
+  # An abstraction for a UnionStation server. Many servers can run at once if
+  # they're on different ports.
   class Server
     @@protocols = {}
     
     # Registers a new Protocol for use globally.
-    def self.register_protocol(name, protocol)
-      @@protocols[name.to_s.to_sym] = protocol
+    def self.register_protocol(name, child, parent)
+      # Use some meta-class hackery.
+      # Make a new class as a child of the EventMachine connection
+      # that we want to use. Include the Protocol methods to make
+      # this class a dynamically generated Protocol class.
+      
+      # Now, make another class as a child of the newly-created class.
+      # Looks like: Parent => New class => Child
+      c = Class.new(Class.new(parent) {include Protocol}) {extend child}
+      UnionStation.const_set("Synthesized#{child.name.to_s.split('::').last}", c)
+      
+      @@protocols[name.to_s.to_sym] = c
     end
     
     # Creates a new Server. One Server acts as the hub for many connections and many
@@ -31,12 +36,16 @@ module UnionStation
     #
     # <tt>
     # us = Server.new
+    # </tt>
+    #
+    # <tt>
     # us.start!
     # :tcp => {:host => '127.0.0.1', :port => 1894},
     # :udp => {:port => 8000},
     # :unix => {:socket => '/var/run/union_station.sock'}
     # </tt>
     def start!(args = {})
+      EM.epoll
       EM.run do
         @channel = EM::Channel.new
         args.each do |k, v|
@@ -68,10 +77,12 @@ module UnionStation
       end
     end
     
+    # Binds a connection to this server. Usually called by the connection.
     def bind(connection)
       @connections.push(connection)
     end
     
+    # Unbinds a connection from this server. Usually called by the connection.
     def unbind(connection)
       @connections.delete(connection)
     end

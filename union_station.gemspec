@@ -9,6 +9,6 @@ Gem::Specification.new do |s|
   s.authors      =  ['Morgan Jones']
   s.email        =  'integ3rs@gmail.com'
   s.files        =  FileList['lib/union_station.rb', 'lib/union_station/*.rb'].to_a
-  s.has_rdoc     = false
-  s.dependencies = ['json', 'eventmachine', 'daemons', 'uuid']
+  s.has_rdoc     = true
+  s.dependencies = ['json', 'eventmachine', 'em-websocket', 'uuidtools']
 end
