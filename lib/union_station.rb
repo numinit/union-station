@@ -1,14 +1,15 @@
-#     __  __       _               _____ __        __  _
-#    / / / /____  (_)____  ____   / ___// /_____ _/ /_(_)____  ____
-#   / / / // __ \/ // __ \/ __ \  \__ \/ __/ __ `/ __/ // __ \/ __ \
-#  / /_/ // / / / // /_/ / / / / ___/ / /_/ /_/ / /_/ // /_/ / / / /
-#  \____//_/ /_/_/ \____/_/ /_/ /____/\__/\__,_/\__/_/ \____/_/ /_/
-#            Established 1914 in Denver, CO - Travel by Rails today!
+#      __  __       _               _____ __        __  _
+#     / / / /____  (_)____  ____   / ___// /_____ _/ /_(_)____  ____
+#    / / / // __ \/ // __ \/ __ \  \__ \/ __/ __ `/ __/ // __ \/ __ \
+#   / /_/ // / / / // /_/ / / / / ___/ / /_/ /_/ / /_/ // /_/ / / / /
+#   \____//_/ /_/_/ \____/_/ /_/ /____/\__/\__,_/\__/_/ \____/_/ /_/
+#             Established 1914 in Denver, CO - Travel by Rails today!
 
 require 'eventmachine'
 
-require 'us/server.rb'
-require 'us/message.rb'
+require 'us/server'
+require 'us/message'
+require 'us/protocol'
 
 # The main Union Station module.
 # Everything related to Union Station is contained within here!
@@ -16,21 +17,8 @@ require 'us/message.rb'
 module UnionStation
   # Starts Union Station as a daemon.
   #
-  # Takes :host and :port as arguments. If :socket is provided, a Unix
-  # socket will be used. This takes precedence over any other arguments.
-  # This method will raise an error from EventMachine if the address or socket
-  # is already in use.
-  # 
-  # Defaults:
-  #
-  # * Host: 127.0.0.1
-  # * Port: 1894
-  # * Socket: nil
+  # See Server#start! for arguments.
   def self.start!(args = {})
-    args[:host] ||= '127.0.0.1'
-    args[:port] ||= 1894
-    args[:host] = args[:socket] if !args[:socket].nil? && !args[:socket].empty?
-    
     # Fork a child
     @@pid = Process.fork do
       @@server = Server.new
@@ -45,7 +33,7 @@ module UnionStation
   end
   
   # Attempts to stop Union Station using the PID created
-  # in UnionStation::start, or the provided PID. This method will attempt to
+  # in ::start!, or the provided PID. This method will attempt to
   # stop the daemon nicely using SIGTERM, and will resort to SIGKILL if it
   # doesn't stop within the timeout. Timeout value is given in seconds, and
   # defaults to 3.00.
@@ -53,8 +41,8 @@ module UnionStation
   # This method will raise a RuntimeError if Union Station is not running or
   # if even SIGKILL failed.
   # 
-  # Returns true if Union Station was terminated
-  # successfully, false if it had to be killed.
+  # Returns true if Union Station was terminated successfully, false if it
+  # had to be killed.
   def self.stop!(pid = nil, timeout = 3.00)
     pid ||= @@pid
     
@@ -89,6 +77,8 @@ module UnionStation
         return false
       rescue Errno::ETIMEDOUT
         raise 'Could not stop Union Station, even with SIGKILL!'
+      rescue Errno::ESRCH
+        true
       end
     end
     

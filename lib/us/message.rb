@@ -43,7 +43,7 @@ module UnionStation
     # * 7: LOG_DEBUG
     # +body+: any message to send
     # 
-    # At a bare minimum, the client must send the message body and its channel UUID.
+    # At a bare minimum, the client must send the message body and its channel.
     # Level defaults to INFO.
     def self.from_json(json)
       obj = JSON.parse(json, :symbolize_names => true)
