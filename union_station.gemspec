@@ -1,3 +1,5 @@
+require 'rake'
+
 Gem::Specification.new do |s|
   s.name         =  'union_station'
   s.version      =  '0.1.0'
@@ -10,5 +12,7 @@ Gem::Specification.new do |s|
   s.email        =  'integ3rs@gmail.com'
   s.files        =  FileList['lib/union_station.rb', 'lib/union_station/*.rb'].to_a
   s.has_rdoc     = true
-  s.dependencies = ['json', 'eventmachine', 'em-websocket', 'uuidtools']
+  s.dependencies << 'json'
+  s.dependencies << 'eventmachine'
+  s.dependencies << 'uuidtools'
 end
