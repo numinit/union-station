@@ -12,7 +12,7 @@ Gem::Specification.new do |s|
   s.email        =  'integ3rs@gmail.com'
   s.files        =  FileList['lib/union_station.rb', 'lib/union_station/*.rb'].to_a
   s.has_rdoc     = true
-  s.dependencies << 'json'
-  s.dependencies << 'eventmachine'
-  s.dependencies << 'uuidtools'
+  s.add_dependency 'json'
+  s.add_dependency 'eventmachine'
+  s.add_dependency 'uuidtools'
 end
