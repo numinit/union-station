@@ -44,16 +44,32 @@ module UnionStation
       self.new(obj[:channel], obj[:body], obj[:level])
     end
     
-    # Creates a new message with the specified arguments.
-    def initialize(channel, body, level = nil)      
-      raise 'channel not provided' if channel.nil? || channel.empty?
-      raise 'message body not provided' if body.nil?
-      @channel, @body, @level, @timestamp, @uuid = channel, body, level || INFO, Time.now, UUIDTools::UUID.timestamp_create
+    # Creates a new "bare message" - just the channel, body, and level, suitable for
+    # transmission to a Union Station server
+    def self.bare(channel, body, level = nil)
+      self.new(channel, body, level, true)
     end
     
-    # Dumps the current object to JSON.
+    # Creates a new message with the specified arguments.
+    # Specify bare = true to ignore assigning a UUID and timestamp.
+    def initialize(channel, body, level = nil, bare = false)      
+      raise 'channel not provided' if channel.nil? || channel.empty?
+      raise 'message body not provided' if body.nil?
+      @channel, @body, @level, @bare = channel, body, level || INFO, bare
+      @timestamp, @uuid = Time.now, UUIDTools::UUID.timestamp_create unless @bare
+    end
+    
+    # Dumps the current object to JSON
     def to_json
-      {:channel => @channel, :level => @level, :body => @body, :timestamp => (@timestamp.to_f * 1000).to_i, :uuid => @uuid.to_s}.to_json
+      unless @bare
+        {:channel => @channel, :level => @level, :body => @body, :timestamp => (@timestamp.to_f * 1000).to_i, :uuid => @uuid.to_s}.to_json
+      else
+        {:channel => @channel, :level => @level, :body => @body}.to_json
+      end
+    end
+    
+    def to_s
+      @body
     end
   end
 end

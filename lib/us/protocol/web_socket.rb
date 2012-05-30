@@ -3,8 +3,6 @@ require 'em-websocket'
 module UnionStation
   # Provides a WebSocket server to send and receive Union Station events.
   module ProtocolWebSocket
-    Server.register_protocol(:web_socket, self, EM::WebSocket::Connection)
-    
     # Starts a WebSocket server.
     #
     # Arguments:
@@ -13,9 +11,9 @@ module UnionStation
     # * +port+: the port to listen on, defaults to 1914
     #
     # <tt>:http => {:host => 'localhost', :port => 1914}</tt>
-    def start!(server, args = {})
+    def start!(server, channel, args = {})
       args[:host] ||= 'localhost'
-      args[:port] ||= 1914
+      args[:port] ||= PORT_ALT
       EM.start_server(args[:host], args[:port], self, server, channel)
     end
     
@@ -24,4 +22,6 @@ module UnionStation
       EM.stop_server(signature)
     end
   end
+  
+  protocol :web_socket, EM::WebSocket::Connection
 end

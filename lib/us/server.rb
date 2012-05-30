@@ -5,16 +5,46 @@ module UnionStation
     @@protocols = {}
     
     # Registers a new Protocol for use globally.
-    def self.register_protocol(name, child, parent)
+    # Uses some serious class hackery to set parents correctly.
+    #
+    # The protocol module name will be inferred from the +name+ argument.
+    # 
+    # +:tcp+ would yield +ProtocolTcp+ as the module name.
+    #
+    # +:web_socket+ would yield +ProtocolWebSocket+ as the module name.
+    def self.register_protocol!(name, parent)
       # Use some meta-class hackery.
       # Make a new class as a child of the EventMachine connection
       # that we want to use. Include the Protocol methods to make
       # this class a dynamically generated Protocol class.
       
+      # Infer the child from the name.
+      protocol = "Protocol#{name.to_s.split('_').collect {|a| a.capitalize}.join}"
+      child = UnionStation.const_get(protocol)
+      raise "Protocol #{protocol_name} doesn't exist!" if child.nil? 
+      
       # Now, make another class as a child of the newly-created class.
-      # Looks like: Parent => New class => Child
-      c = Class.new(Class.new(parent) {include Protocol}) {extend child}
-      UnionStation.const_set("Synthesized#{child.name.to_s.split('::').last}", c)
+      # Looks like: EventMachine Protocol => Protocol => Child
+      
+      k = Class.new(parent) do
+        def self.include(included_module)
+          included_module.singleton_methods.each {|m| singleton_method_added(m)}
+          included_module.instance_methods.each {|m| method_added(m)}
+          super
+        end
+    
+        include Protocol
+      end
+      
+      c = Class.new(k) do
+        def self.extend(included_module)
+          super.include(included_module)
+        end
+        
+        extend child
+      end
+      
+      UnionStation.const_set("Synthesized#{child.name.to_s.rpartition('::').last}", c)
       
       @@protocols[name.to_s.to_sym] = c
     end
@@ -61,7 +91,7 @@ module UnionStation
     #
     # Takes a timeout in seconds. If all connections have not terminated in the timeframe given,
     # Union Station will be forced to stop.
-    def stop!(timeout = 3.0)
+    def stop!(timeout = 2.00)
       @listeners.each do |k, v|
         @@protocols[k].stop!(v)
       end
@@ -74,6 +104,8 @@ module UnionStation
           EM.stop if @connections.empty? || accum >= timeout
           accum += step
         end
+      else
+        EM.stop if EM.reactor_running?
       end
     end
     

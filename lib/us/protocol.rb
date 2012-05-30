@@ -1,55 +1,49 @@
 module UnionStation
-  # The base class for Union Station protocols.
-  # Inherits from LineAndTextProtocol since it's all JSON.
+  # The base module for Union Station protocols.
   module Protocol
     # The Server that this protocol belongs to
     attr_accessor :server
     
     # Starts a generic server. By default, this throws a runtime error.
-    def self.start!(server, channel, args = {})
+    def start!(server, channel, args = {})
       raise 'Using default Protocol::start. Override me!'
     end
     
     # Stops a generic server. By default, this throws a runtime error.
-    def self.stop!(signature)
+    def stop!(signature)
       raise 'Using default Protocol::stop. Override me!'
     end
     
-    # Make a new connection and register with a Server and an EM::Channel.
-    def initialize(server, channel)
-      @server = server
-      @channel = channel
+    # Step 1: Initialize a new Protocol.
+    def initialize(*args)
+      super
+      # Attempt to set Socket::SO_REUSEADDR. Note that this will require
+      # a pretty new version of EventMachine.
+      set_sock_opt Socket::SOL_SOCKET, Socket::SO_REUSEADDR, true if respond_to?(:set_sock_opt)
+      
+      raise ArgumentError if args.count < 2
+      @server = args[0]
+      @channel = args[1]
     end
     
-    # Called after initialization. Binds this connection to a Server and subscribes this
-    # connection to a channel.
+    # Step 2: Bind to a server and subscribe to its channel.
     def post_init
+      super
       @server.bind(self)
       @sid = @channel.subscribe do |data|
-        self.send(data)
+        begin
+          puts "sending #{data} to #{self}"
+          send_data(Message.from_json(data).to_json)
+        rescue RuntimeError, JSON::ParserError => err
+        end
       end
     end
     
-    # Called when the client disconnects.
+    # Step 3: Disconnect.
     def unbind
+      super
       @channel.unsubscribe(@sid)
       @server.unbind(self)
-    end
-    
-    # Sends some data. Can easily be overridden by subclasses.
-    def send(data)
-      begin
-        self.send_data(Message.from_json(data).to_json)
-      rescue RuntimeError, JSON::ParserError => err
-        warn err.to_s.gsub(/(\r|\n)/, '')
-        self.close_connection
-      end
-    end
-    
-    # Receives some data. Can easily be overridden by subclasses.
-    # By default, this method replicates the data in question to all clients.
-    def receive_data(data)
-      @channel.push(data)
     end
   end
 end

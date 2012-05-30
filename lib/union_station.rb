@@ -14,6 +14,9 @@ require 'us/protocol'
 # The main Union Station module.
 # Everything related to Union Station is contained within here!
 module UnionStation
+  PORT = 1914
+  PORT_ALT = 1894
+  
   # Starts Union Station as a daemon.
   #
   # See Server#start! for arguments.
@@ -42,7 +45,7 @@ module UnionStation
   # 
   # Returns true if Union Station was terminated successfully, false if it
   # had to be killed.
-  def self.stop!(pid = nil, timeout = 3.00)
+  def self.stop!(pid = nil, timeout = 5.00)
     pid ||= @@pid
     
     wait_process = ->(pid, timeout) {
@@ -83,4 +86,11 @@ module UnionStation
     
     true
   end
+  
+  # Registers a protocol. See Server::register_protocol! for arguments.
+  def self.protocol(name, parent)
+    Server.register_protocol!(name, parent)
+  end
 end
+
+US = UnionStation

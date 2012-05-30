@@ -1,9 +1,7 @@
 module UnionStation
   # Provides a line-separated TCP server.
   # Messages are separated with CRLF.
-  module ProtocolTCP
-    Server.register_protocol(:tcp, self, EM::P::LineAndTextProtocol)
-    
+  module ProtocolTcp
     # Starts a TCP server.
     #
     # Arguments:
@@ -11,10 +9,10 @@ module UnionStation
     # * +host+: the host to bind, defaults to localhost
     # * +port+: the port to listen on, defaults to 1894
     #
-    # <tt>:tcp => {:host => 'localhost', :port => 1914}</tt>
+    # <tt>:tcp => {:host => 'localhost', :port => 1894}</tt>
     def start!(server, channel, args = {})
       args[:host] ||= 'localhost'
-      args[:port] ||= 1894
+      args[:port] ||= PORT
       EM.start_server(args[:host], args[:port], self, server, channel)
     end
     
@@ -23,8 +21,16 @@ module UnionStation
       EM.stop_server(signature)
     end
     
-    def self.send_data(data)
+    # Receives one line of TCP data.
+    def receive_line(line)
+      line.strip!
+      @channel << line unless line.empty?
+    end
+    
+    def send_data(data)
       super(data + "\r\n")
     end
   end
+  
+  protocol :tcp, EM::P::LineAndTextProtocol
 end

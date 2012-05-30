@@ -1,8 +1,6 @@
 module UnionStation
   # Provides a UNIX socket server.
   module ProtocolUnix
-    Server.register_protocol(:unix, self, EM::P::LineAndTextProtocol)
-    
     # Starts a UNIX domain server.
     #
     # Arguments:
@@ -19,5 +17,17 @@ module UnionStation
     def stop!(signature)
       EM.stop_server(signature)
     end
+    
+    # Receives one line of UNIX socket streaming data.
+    def receive_line(line)
+      line.strip!
+      @channel << line unless line.empty?
+    end
+    
+    def send_data(data)
+      super(data + "\r\n")
+    end
   end
+  
+  protocol :unix, EM::P::LineAndTextProtocol
 end
