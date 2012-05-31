@@ -14,8 +14,7 @@ require 'us/protocol'
 # The main Union Station module.
 # Everything related to Union Station is contained within here!
 module UnionStation
-  PORT = 1914
-  PORT_ALT = 1894
+  PORT = 1894
   
   # Starts Union Station as a daemon.
   #

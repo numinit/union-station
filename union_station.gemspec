@@ -10,7 +10,7 @@ Gem::Specification.new do |s|
   s.description  =  'Union Station takes event sources, multiplexes them in the Event Transceiver, and streams them out to clients.'
   s.authors      =  ['Morgan Jones']
   s.email        =  'integ3rs@gmail.com'
-  s.files        =  FileList['lib/union_station.rb', 'lib/union_station/*.rb'].to_a
+  s.files        =  FileList['lib/union_station.rb', 'lib/us/*.rb', 'lib/us/protocol/*.rb'].to_a
   s.has_rdoc     = true
   s.add_dependency 'json'
   s.add_dependency 'eventmachine'

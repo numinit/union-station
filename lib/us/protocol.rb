@@ -32,7 +32,6 @@ module UnionStation
       @server.bind(self)
       @sid = @channel.subscribe do |data|
         begin
-          puts "sending #{data} to #{self}"
           send_data(Message.from_json(data).to_json)
         rescue RuntimeError, JSON::ParserError => err
         end
